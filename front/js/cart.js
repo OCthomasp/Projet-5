@@ -1,27 +1,52 @@
 main()
 
 async function main(){
-    let cart = JSON.parse(localStorage.cart);
-    const articles =  await getArticles();
-    showCartArticles(cart, articles);
-    addEvents(cart, articles);
-    updateTotals(cart, articles);
-
-    //formulaire
+    let cart = [];
+    let contact = {};
+    if (typeof localStorage.cart !== 'undefined' && localStorage.cart != '[]'){
+        let cart = JSON.parse(localStorage.cart);
+        const articles =  await getArticles();
+        showCartArticles(cart, articles);
+        addItemEvents(cart, articles);
+        updateTotals(cart, articles);
+    }
+    else{
+        updateTotals(cart, undefined);
+    }
+    //form
+    if (typeof localStorage.contact !== 'undefined'){
+        let contact = JSON.parse(localStorage.contact);
+        document.querySelector("#firstName").value = contact.firstName;
+        document.querySelector("#lastName").value = contact.lastName;
+        document.querySelector("#address").value = contact.address;
+        document.querySelector("#city").value = contact.city;
+        document.querySelector("#email").value = contact.email;
+    }
+    
     const btnValidate = document.querySelector("#order");
-    let contact;
-    btnValidate.addEventListener("click", function(e){
+    btnValidate.addEventListener("click", async function(e){
         e.preventDefault();
 
-        // if (checkFormValidity()){
-        //     console.log('valide')
-        // }
-        // else{
-        //     console.log('pas valide')
-        // }
+        if (checkFormValidity()){
+            if ((typeof localStorage.cart == 'undefined' || localStorage.cart == '[]')){
+                alert("Le panier est vide, ajoutez des articles pour passer une commande")
+            }
+            else{
+                contact = JSON.parse(localStorage.contact);
+                cart = JSON.parse(localStorage.cart);
+                
+                const order_id = await postData(contact, cart);
+                console.log(order_id);
+                if (order_id !== 'undefined') {
+                    location.href = "confirmation.html?id=" + order_id;
+                }
+                else{
+                    alert("Une erreur est survenue, la commande n'a pas pu être passée");
+                }
+            }
+        }
     });
 
-    
 }
 
 // Fetch data from api : all products
@@ -80,7 +105,7 @@ function showCartArticles(cart, articles){
 }
 
 //Create eventListeners for all items on the page
-function addEvents(cart, articles){
+function addItemEvents(cart, articles){
     for (i=0; i < cart.length; i++){
         const cart_index = i;
         const item_index = matchIndex(cart[cart_index].id, articles);
@@ -111,7 +136,7 @@ function addEvents(cart, articles){
     }
 }
 
-//update the total price et quantity of items in the cart
+//update the total price and quantity of items in the cart
 function updateTotals(cart, articles){
     let total_quantity_html_holder = document.getElementById('totalQuantity');
     let total_price_html_holder = document.getElementById('totalPrice');
@@ -143,4 +168,197 @@ function updateLocalStorage(cart){
 function matchIndex(id, list){
     const matchId = (element) => element._id == id;
     return list.findIndex(matchId);
+}
+
+/* ------- FORM ------- */
+
+function checkFormValidity(){
+    let contact = {
+        firstName: document.querySelector("#firstName").value,
+        lastName: document.querySelector("#lastName").value,
+        address: document.querySelector("#address").value,
+        city: document.querySelector("#city").value,
+        email: document.querySelector("#email").value,
+    };
+
+    let valid_entry = {
+        firstName: firstNameManage(contact.firstName),
+        lastName: lastNameManage(contact.lastName),
+        address: addressManage(contact.address),
+        city: cityManage(contact.city),
+        email: emailManage(contact.email)
+    }
+
+    // check if any field is incorrect
+    if (!(Object.values(valid_entry).includes(false))){
+        console.log(contact);
+        localStorage.setItem("contact", JSON.stringify(contact));
+        return true;
+    } 
+    else {
+        return false;
+    }
+}
+
+// check if first name or city is valid
+function isValidFirstNameCity(str){
+    return /^[A-ZÀÂÄÇÉÈÊËÎÏÔÙÛÜ][' A-ZÀÂÄÇÉÈÊËÎÏÔÙÛÜa-zàâäçéèêëîïôùûü\-]+$/.test(str);
+    // ^ : anchor, begining of the text
+    // [A-ZÀÂÄÇÉÈÊËÎÏÔÙÛÜ] : (first) character must be an uppercase letter
+    // [' A-ZÀÂÄÇÉÈÊËÎÏÔÙÛÜa-zàâäçéèêëîïôùûü\-] : character can be any letter, with "-", "'" and " " included
+    // + : quantifier, 1 or more
+    // $ : anchor, end of the text
+}
+
+// check if last name is valid
+function isValidLastName(str){
+    return /^[A-ZÀÂÄÇÉÈÊËÎÏÔÙÛÜa-zàâäçéèêëîïôùûü][' A-ZÀÂÄÇÉÈÊËÎÏÔÙÛÜa-zàâäçéèêëîïôùûü\-]+$/.test(str);
+    // ^ : anchor, begining of the text
+    // [A-ZÀÂÄÇÉÈÊËÎÏÔÙÛÜa-zàâäçéèêëîïôùûü] : (first) character can be any letter
+    // [' A-ZÀÂÄÇÉÈÊËÎÏÔÙÛÜa-zàâäçéèêëîïôùûü\-] : character can be any letter, with "-", "'" and " " included
+    // + : quantifier, 1 or more
+    // $ : anchor, end of the text
+}
+
+// check if address is valid
+function isValidAddress(str){
+    return /^[0-9]{0,4}(bis|ter|quater)? [' A-ZÀÂÄÇÉÈÊËÎÏÔÙÛÜa-zàâäçéèêëîïôùûü\-]+$/.test(str);
+    // ^ : anchor, begining of the text
+    // [0-9] : match any digit
+    // {0,4} : quantifier, any amount between 0 and 4
+    // (bis|ter|quater) : match either bis, ter or quater
+    // ? : quantifier, 0 or 1
+    // // [' A-ZÀÂÄÇÉÈÊËÎÏÔÙÛÜa-zàâäçéèêëîïôùûü\-] : character can be any letter, with "-", "'" and " " included
+    // + : quantifier, 1 or more
+    // $ : anchor, end of the text
+}
+
+// check if email address is valid
+function isValidEmail(str){
+    return /^[a-z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-z0-9\-]+\.[a-z]{2,3}$/.test(str);
+    // ^ : anchor, begining of the text
+    // [a-z0-9.!#$%&'*+-/=?^_`{|}~] : match all characters allowed in the local part
+    // + : quantifier, 1 or more
+    // [a-z0-9\-] : match all characters allowed in the domain name
+    // + : quantifier, 1 or more
+    // \.[a-z]{2,3} : matches domain extension pattern : "." followed by 2 or 3 letters
+    // $ : anchor, end of the text
+    //formating reference : https://en.wikipedia.org/wiki/Email_address#Local-part
+}
+
+// Manage first name form field
+function firstNameManage(first_name) {
+    let input_first_name = document.querySelector("#firstName");
+    let error_html_holder = document.querySelector("#firstNameErrorMsg");
+    if (isValidFirstNameCity(first_name)) {
+        input_first_name.style.border = "solid";
+        input_first_name.style.borderColor = "green";
+        error_html_holder.textContent = "";
+        return true;
+    } 
+    else {
+        input_first_name.style.border = "solid";
+        input_first_name.style.borderColor = "red";
+        error_html_holder.textContent = "Veuillez entrer un prénom valide, ex: Thierry";
+        return false;
+    }
+}
+// Manage last name form field
+function lastNameManage(last_name) {
+    let input_last_name = document.querySelector("#lastName");
+    let error_html_holder = document.querySelector("#lastNameErrorMsg");
+    if (isValidFirstNameCity(last_name)) {
+        input_last_name.style.border = "solid";
+        input_last_name.style.borderColor = "green";
+        error_html_holder.textContent = "";
+        return true;
+    } 
+    else {
+        input_last_name.style.border = "solid";
+        input_last_name.style.borderColor = "red";
+        error_html_holder.textContent = "Veuillez entrer un nom valide, ex: Henry";
+        return false;
+    }
+}
+// Manage address form field
+function addressManage(address) {
+    let input_address = document.querySelector("#address");
+    let error_html_holder = document.querySelector("#addressErrorMsg");
+    if (isValidAddress(address)) {
+        input_address.style.border = "solid";
+        input_address.style.borderColor = "green";
+        error_html_holder.textContent = "";
+        return true;
+    } 
+    else {
+        input_address.style.border = "solid";
+        input_address.style.borderColor = "red";
+        error_html_holder.textContent = "Veuillez entrer une adresse valide, ex: 20 rue Lamartine";
+        return false;
+    }
+}
+// Manage city form field
+function cityManage(city) {
+    let input_city = document.querySelector("#city");
+    let error_html_holder = document.querySelector("#cityErrorMsg");
+    if (isValidFirstNameCity(city)) {
+        input_city.style.border = "solid";
+        input_city.style.borderColor = "green";
+        error_html_holder.textContent = "";
+        return true;
+    } 
+    else {
+        input_city.style.border = "solid";
+        input_city.style.borderColor = "red";
+        error_html_holder.textContent = "Veuillez entrer une ville valide, ex: Lyon";
+        return false;
+    }
+}
+// Manage email form field
+function emailManage(email) {
+    let input_email = document.querySelector("#email");
+    let error_html_holder = document.querySelector("#emailErrorMsg");
+    if (isValidEmail(email)) {
+        input_email.style.border = "solid";
+        input_email.style.borderColor = "green";
+        error_html_holder.textContent = "";
+        return true;
+    } 
+    else {
+        input_email.style.border = "solid";
+        input_email.style.borderColor = "red";
+        error_html_holder.textContent = "Veuillez entrer un email valide, ex: exemple@exemple.fr";
+        return false;
+    }
+}
+
+/* ------- POST ------- */
+
+async function postData(contact, cart){
+    const products = [];
+    for (i=0; i<cart.length; i++){
+        products.push(cart[i].id);
+    }
+    const post_body = JSON.stringify({contact, products})
+
+    let post_options = {
+        method: "POST",
+        body: post_body,
+        headers: {
+          "Content-Type": "application/json",
+        }
+    }
+    console.log(post_body);
+    const url = "http://localhost:3000/api/products/order";
+    return fetch(url, post_options)
+        .then(
+            function(response){
+                return response.json();
+            }
+        )
+        .then(
+            function(response){
+                return response.orderId;
+            }
+        );
 }

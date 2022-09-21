@@ -18,7 +18,7 @@ function getArticles(){
             function(articles_json){
                 return articles_json;
             }
-        )
+        );
 }
 
 // Display articles on the page
