@@ -5,7 +5,10 @@ async function main(){
     showArticles(articles);
 }
 
-// Fetch data from api : all products
+/** 
+* Fetch data from api : all products.
+* @return {object} array of dict - array of all the products available
+*/
 function getArticles(){
     const url = "http://localhost:3000/api/products/";
     return fetch(url)
@@ -21,7 +24,10 @@ function getArticles(){
         );
 }
 
-// Display articles on the page
+/** 
+* Display articles on the page.
+* @param {object} articles - array of articles (dicts)
+*/
 function showArticles(articles){
     let articles_html_holder = document.getElementById("items");
     for(i=0; i < articles.length; i++){

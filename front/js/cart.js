@@ -49,7 +49,10 @@ async function main(){
 
 }
 
-// Fetch data from api : all products
+/** 
+* Fetch data from api : all products.
+* @return {array of dict} Returns all the articles.
+*/// 
 function getArticles(){
     const url = "http://localhost:3000/api/products/";
     return fetch(url)
@@ -65,7 +68,11 @@ function getArticles(){
         )
 }
 
-// Display cart items on the page
+/** 
+* Display cart items on the page.
+* @param {array of dict} cart - content of the user's cart
+* @param {array of dict} articles - data about all the products available
+*/
 function showCartArticles(cart, articles){
     let cart_html_holder = document.getElementById('cart__items');
     
@@ -104,7 +111,11 @@ function showCartArticles(cart, articles){
     }
 }
 
-//Create eventListeners for all items on the page
+/** 
+* Create eventListeners for all items on the page.
+* @param {array of dict} cart - content of the user's cart
+* @param {array of dict} articles - data about all the products available
+*/
 function addItemEvents(cart, articles){
     for (i=0; i < cart.length; i++){
         const cart_index = i;
@@ -136,7 +147,11 @@ function addItemEvents(cart, articles){
     }
 }
 
-//update the total price and quantity of items in the cart
+/** 
+* Update the total price and quantity of items in the cart.
+* @param {array of dict} cart - content of the user's cart
+* @param {array of dict} articles - data about all the products available
+*/
 function updateTotals(cart, articles){
     let total_quantity_html_holder = document.getElementById('totalQuantity');
     let total_price_html_holder = document.getElementById('totalPrice');
@@ -159,19 +174,31 @@ function updateTotals(cart, articles){
     total_price_html_holder.innerHTML = str_total_price;
 }
 
-//update the cart stored in LocalStorage
+/** 
+* Update the cart stored in LocalStorage.
+* @param {array of dict} cart - content of the user's cart
+*/
 function updateLocalStorage(cart){
     localStorage.setItem("cart", JSON.stringify(cart));
 }
 
-//given an id, get the index of corresponding item in a list
-function matchIndex(id, list){
+/** 
+* Given an id, return the index of corresponding item in the articles.
+* @param {string} id - id of the item
+* @param {object} articles - array of articles (dicts)
+* @return {int} index of corresponding item in the array of articles
+*/
+function matchIndex(id, articles){
     const matchId = (element) => element._id == id;
-    return list.findIndex(matchId);
+    return articles.findIndex(matchId);
 }
 
 /* ------- FORM ------- */
 
+/** 
+* Check if all field entries of the form have been properly filed.
+* @return {boolean} return true if form is valid, false otherwise
+*/
 function checkFormValidity(){
     let contact = {
         firstName: document.querySelector("#firstName").value,
@@ -200,7 +227,11 @@ function checkFormValidity(){
     }
 }
 
-// check if first name or city is valid
+/** 
+* Check if first name or city is valid.
+* @param {string} str - first name or city name
+* @return {boolean} true if valid first name or city, false otherwise
+*/
 function isValidFirstNameCity(str){
     return /^[A-ZÀÂÄÇÉÈÊËÎÏÔÙÛÜ][' A-ZÀÂÄÇÉÈÊËÎÏÔÙÛÜa-zàâäçéèêëîïôùûü\-]+$/.test(str);
     // ^ : anchor, begining of the text
@@ -210,7 +241,11 @@ function isValidFirstNameCity(str){
     // $ : anchor, end of the text
 }
 
-// check if last name is valid
+/** 
+* Check if last name is valid.
+* @param {string} str - last name
+* @return {boolean} true if valid last name, false otherwise
+*/
 function isValidLastName(str){
     return /^[A-ZÀÂÄÇÉÈÊËÎÏÔÙÛÜa-zàâäçéèêëîïôùûü][' A-ZÀÂÄÇÉÈÊËÎÏÔÙÛÜa-zàâäçéèêëîïôùûü\-]+$/.test(str);
     // ^ : anchor, begining of the text
@@ -220,7 +255,11 @@ function isValidLastName(str){
     // $ : anchor, end of the text
 }
 
-// check if address is valid
+/** 
+* Check if address is valid.
+* @param {string} str - address
+* @return {boolean} true if valid address, false otherwise
+*/
 function isValidAddress(str){
     return /^[0-9]{0,4}(bis|ter|quater)? [' A-ZÀÂÄÇÉÈÊËÎÏÔÙÛÜa-zàâäçéèêëîïôùûü\-]+$/.test(str);
     // ^ : anchor, begining of the text
@@ -233,7 +272,11 @@ function isValidAddress(str){
     // $ : anchor, end of the text
 }
 
-// check if email address is valid
+/** 
+* Check if email is valid.
+* @param {string} str - email
+* @return {boolean} true if valid email, false otherwise
+*/
 function isValidEmail(str){
     return /^[a-z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-z0-9\-]+\.[a-z]{2,3}$/.test(str);
     // ^ : anchor, begining of the text
@@ -246,7 +289,12 @@ function isValidEmail(str){
     //formating reference : https://en.wikipedia.org/wiki/Email_address#Local-part
 }
 
-// Manage first name form field
+/** 
+* Manage first name form field.
+* @summary check and indicate if the form field is correctly filed or not
+* @param {string} first_name - first name
+* @return {boolean} return true if the field was correctly filed, false otherwise
+*/
 function firstNameManage(first_name) {
     let input_first_name = document.querySelector("#firstName");
     let error_html_holder = document.querySelector("#firstNameErrorMsg");
@@ -263,11 +311,17 @@ function firstNameManage(first_name) {
         return false;
     }
 }
-// Manage last name form field
+
+/** 
+* Manage last name form field.
+* @summary check and indicate if the form field is correctly filed or not
+* @param {string} last_name - last name
+* @return {boolean} return true if the field was correctly filed, false otherwise
+*/
 function lastNameManage(last_name) {
     let input_last_name = document.querySelector("#lastName");
     let error_html_holder = document.querySelector("#lastNameErrorMsg");
-    if (isValidFirstNameCity(last_name)) {
+    if (isValidLastName(last_name)) {
         input_last_name.style.border = "solid";
         input_last_name.style.borderColor = "green";
         error_html_holder.textContent = "";
@@ -280,7 +334,13 @@ function lastNameManage(last_name) {
         return false;
     }
 }
-// Manage address form field
+
+/** 
+* Manage address form field.
+* @summary check and indicate if the form field is correctly filed or not
+* @param {string} address - address
+* @return {boolean} return true if the field was correctly filed, false otherwise
+*/
 function addressManage(address) {
     let input_address = document.querySelector("#address");
     let error_html_holder = document.querySelector("#addressErrorMsg");
@@ -297,7 +357,13 @@ function addressManage(address) {
         return false;
     }
 }
-// Manage city form field
+
+/** 
+* Manage city form field.
+* @summary check and indicate if the form field is correctly filed or not
+* @param {string} city - city
+* @return {boolean} return true if the field was correctly filed, false otherwise
+*/
 function cityManage(city) {
     let input_city = document.querySelector("#city");
     let error_html_holder = document.querySelector("#cityErrorMsg");
@@ -314,7 +380,13 @@ function cityManage(city) {
         return false;
     }
 }
-// Manage email form field
+
+/** 
+* Manage email form field.
+* @summary check and indicate if the form field is correctly filed or not
+* @param {string} email - email
+* @return {boolean} return true if the field was correctly filed, false otherwise
+*/
 function emailManage(email) {
     let input_email = document.querySelector("#email");
     let error_html_holder = document.querySelector("#emailErrorMsg");
@@ -334,6 +406,12 @@ function emailManage(email) {
 
 /* ------- POST ------- */
 
+/** 
+* Send order data to the api.
+* @param {object} contact - dict of user contact info
+* @param {object} cart - array of dict - content of the user cart
+* @return {string} id of the user order
+*/
 async function postData(contact, cart){
     const products = [];
     for (i=0; i<cart.length; i++){

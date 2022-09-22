@@ -16,7 +16,10 @@ async function main(){
     });
 }
 
-// Fetch data from api : 1 product
+/** 
+* Fetch data from api : 1 product.
+* @param {string} id - id of the article we want to display on the page
+*/
 function getArticle(id){
     const url = "http://localhost:3000/api/products/" + id;
     return fetch(url)
@@ -32,6 +35,10 @@ function getArticle(id){
         )
 }
 
+/** 
+* Display article on the page.
+* @param {object} article - article (dicts)
+*/
 function showArticle(article){
     let img_html_holder = document.querySelector(".item__img");
     let title_html_holder = document.getElementById('title');
@@ -58,6 +65,12 @@ function showArticle(article){
     colors_html_holder.innerHTML = article_color_options;
 }
 
+/** 
+* Add item into the user cart.
+* @param {string} id - id of the item to add to the cart
+* @param {int} quantity - chosen quantity of item to add, between 1 and 100
+* @param {string} color - chosen color of the item
+*/
 function addItemToCart(id, quantity, color){
     let cart_array = [];
     let item_packet = {'id': id, 'quantity': quantity, 'color': color};
@@ -95,12 +108,18 @@ function addItemToCart(id, quantity, color){
     console.log(localStorage.cart)
 }
 
-//get quantity of items
+/** 
+* Get quantity of items.
+* @return {int} chosen quantity of item
+*/
 function getQuantity() {
     return parseInt(document.getElementById("quantity").value);
 }
 
-//get color of item
+/** 
+* Get color of items.
+* @return {int} chosen color of item
+*/
 function getColor() {
     return document.getElementById("colors").value;
 }
